@@ -1,0 +1,44 @@
+env:
+  es6: true
+  node: true
+  jasmine: true
+extends:
+  - 'prettier'
+parserOptions:
+  sourceType: module
+  ecmaVersion: 2017
+rules:
+  indent:
+    - error
+    - 4
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - error
+    - double
+  semi:
+    - error
+    - always
+  eqeqeq:
+    - error
+    - always
+  arrow-spacing: [error, { "before": true, "after": true }]
+  comma-spacing:
+    - error
+  space-before-blocks:
+    - error
+  no-trailing-spaces:
+    - error
+  no-multiple-empty-lines:
+    - error
+    - max: 1
+  keyword-spacing:
+    - error
+  block-spacing:
+    - error
+    - always
+  padding-line-between-statements: [error, { blankLine: "always", prev: "*", next: "multiline-block-like" }, { blankLine: "always", prev: "multiline-block-like", next: "*" }, { blankLine: "always", prev: ["const", "let", "var"], next: "*"}, { blankLine: "any", prev: ["const", "let", "var"], next: ["const", "let", "var"]}]
+overrides:
+  - files:
+      - "dist/**"

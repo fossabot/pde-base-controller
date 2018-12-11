@@ -1,0 +1,7 @@
+# Mac OS
+.DS_Store
+/.DocumentRevisions-V100
+# Node.js
+/node_modules
+/coverage
+/.nyc_output

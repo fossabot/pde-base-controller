@@ -1,0 +1,7 @@
+# Mac OS
+.DS_Store
+# Node.js
+/node_modules
+/coverage
+.DocumentRevisions-V100/**/*
+/dist

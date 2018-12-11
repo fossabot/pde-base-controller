@@ -1,0 +1,53 @@
+{
+  "author": "CHG PDE Team",
+  "dependencies": {
+    "common-errors": "^1.0.5"
+  },
+  "description": "",
+  "devDependencies": {
+    "@zeit/ncc": "^0.5.5",
+    "ava": "^0.25.0",
+    "commitlint": "^7.2.1",
+    "eslint": "^5.10.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-prettier": "^3.0.0",
+    "jest": "^23.6.0",
+    "jest-junit": "^5.2.0",
+    "jsdoc": "^3.5.5",
+    "np": "^3.0.4",
+    "nyc": "^13.1.0",
+    "prettier": "^1.15.3",
+    "sinon": "^7.2.0"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "main": "dist/index.js",
+  "name": "pde-base-controller",
+  "nyc": {
+    "include": [
+      "**/*.js",
+      "./index.js"
+    ],
+    "exclude": [
+      "**/*.test.js",
+      "build",
+      "config",
+      "coverage",
+      "dist"
+    ],
+    "check-coverage": true,
+    "per-file": true,
+    "lines": 80,
+    "statements": 80,
+    "functions": 80,
+    "branches": 80
+  },
+  "scripts": {
+    "build": "ncc build BaseController.js",
+    "format": "prettier --config .prettierrc --write *.js **/*.js !*.test.js !**/*.test.js !**/*.config.js",
+    "lint": "eslint --config .eslintrc --ignore-pattern dist/ . ",
+    "lint:fix": "eslint --config .eslintrc --ignore-pattern dist/ --fix . ",
+    "test": "nyc ava"
+  },
+  "version": "1.0.0"
+}
