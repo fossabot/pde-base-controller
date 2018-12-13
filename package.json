@@ -1,7 +1,10 @@
 {
   "author": "CHG PDE Team",
   "commitlint": {
-    "extends": ["@commitlint/config-conventional"]
+    "extends": ["@commitlint/config-conventional"],
+    "rules": {
+        "header-max-length": [2, "always", 140]
+    }
   },
   "dependencies": {
     "common-errors": "^1.0.5"
