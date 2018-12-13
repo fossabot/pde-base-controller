@@ -156,20 +156,24 @@ module.exports = class BaseController {
     }
 
     // verifyRequiredParameters() collects errors about missing params and throws an Error if any are missing
-    // requiredQueryStringParams and requiredRequestBodyParams are expected to be arrays of strings
+    // qs and body are expected to be arrays of strings
     // This function also parses the event.body from JSON into an object
+    /**
+     * @param {Array<String>} qs - Query strings passed in
+     * @param {Array<String>} body - Body params that are required
+     * @throws {Error} - When we don't have a correlation object in the headers
+     * @throws {BadRequestError} - When other errors have accrued
+     */
     verifyRequiredParameters(
         eventObject,
-        requiredQueryStringParams,
-        requiredRequestBodyParams
+        qs,
+        body
     ) {
-        let queryStringPropertyName = "queryStringParameters";
-        let requestBodyPropertyName = "body";
         let errors = [];
 
         this.logger.trace(
             "BaseController.verifyRequiredParameters() called",
-            { qs: requiredQueryStringParams, body: requiredRequestBodyParams },
+            { qs, body },
             this.constructor.name
         );
 
@@ -208,9 +212,7 @@ module.exports = class BaseController {
                     "A Correlation-Object header is required in the request."
                 );
             }
-        } else {
-            errors.push("Event headers are missing or malformed.");
-        }
+        } else errors.push("Event headers are missing or malformed.");
 
         function processPropertySet(propertySetName, requiredProperties) {
             let propertySet = eventObject[propertySetName];
@@ -236,12 +238,10 @@ module.exports = class BaseController {
             }
         }
 
-        processPropertySet(queryStringPropertyName, requiredQueryStringParams);
-        processPropertySet(requestBodyPropertyName, requiredRequestBodyParams);
+        processPropertySet("queryStringParameters", qs);
+        processPropertySet("body", body);
 
         // If there are any errors, throw an Error object with all of the messages
-        if (errors.length > 0) {
-            throw new BadRequestError(errors.join(" "));
-        }
+        if (errors.length > 0) throw new BadRequestError(errors.join(" "));
     }
 };
