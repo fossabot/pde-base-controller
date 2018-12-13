@@ -1,10 +1,14 @@
 {
   "author": "CHG PDE Team",
+  "commitlint": {
+    "extends": ["@commitlint/config-conventional"]
+  },
   "dependencies": {
     "common-errors": "^1.0.5"
   },
   "description": "",
   "devDependencies": {
+    "@commitlint/config-conventional": "^7.1.2",
     "@zeit/ncc": "^0.5.5",
     "ava": "^0.25.0",
     "commitlint": "^7.2.1",
