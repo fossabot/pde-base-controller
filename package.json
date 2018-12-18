@@ -1,5 +1,5 @@
 {
-  "author": "CHG PDE Team",
+  "author": "CHG",
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
@@ -15,7 +15,7 @@
   "dependencies": {
     "common-errors": "^1.0.5"
   },
-  "description": "",
+  "description": "Base controller for Lambda services in provider digital experiance.",
   "devDependencies": {
     "@commitlint/config-conventional": "^7.1.2",
     "@zeit/ncc": "^0.5.5",
@@ -35,7 +35,7 @@
     "uuid": "^3.3.2"
   },
   "keywords": [],
-  "license": "ISC",
+  "license": "MIT",
   "main": "dist/index.js",
   "name": "@chg/pde-base-controller",
   "nyc": {
