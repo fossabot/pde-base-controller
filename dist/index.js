@@ -1,2 +1,878 @@
-module.exports=function(r){var e={};function __webpack_require__(t){if(e[t])return e[t].exports;var o=e[t]={i:t,l:!1,exports:{}};return r[t].call(o.exports,o,o.exports,__webpack_require__),o.l=!0,o.exports}return __webpack_require__.m=r,__webpack_require__.c=e,__webpack_require__.d=function(r,e,t){__webpack_require__.o(r,e)||Object.defineProperty(r,e,{enumerable:!0,get:t})},__webpack_require__.r=function(r){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(r,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(r,"__esModule",{value:!0})},__webpack_require__.t=function(r,e){if(1&e&&(r=__webpack_require__(r)),8&e)return r;if(4&e&&"object"==typeof r&&r&&r.__esModule)return r;var t=Object.create(null);if(__webpack_require__.r(t),Object.defineProperty(t,"default",{enumerable:!0,value:r}),2&e&&"string"!=typeof r)for(var o in r)__webpack_require__.d(t,o,function(e){return r[e]}.bind(null,o));return t},__webpack_require__.n=function(r){var e=r&&r.__esModule?function getDefault(){return r.default}:function getModuleExports(){return r};return __webpack_require__.d(e,"a",e),e},__webpack_require__.o=function(r,e){return Object.prototype.hasOwnProperty.call(r,e)},__webpack_require__.p="",__webpack_require__(__webpack_require__.s=5)}([function(r,e,t){var o=t(1),s=t(8);r.exports=function generateErrorClass(r,e){(e=e||{}).subclass&&console.warn("options.subclass is deprecated. use options.extends instead."),e.extends=e.extends||e.subclass||Error,e.args=e.args||["message","inner_error"],e.generateMessage=e.generateMessage||null,e.globalize=!1!==e.globalize,n(r),a(e.args);var t=new Function("classConstructor",["return function ",r,"(",e.args.join(", "),"){","if(!(this instanceof ",r,")) {","var instance = Object.create(",r,".prototype);","classConstructor.apply(instance, arguments);","return instance;","} else {","classConstructor.apply(this, arguments);","}","};"].join(""))(function classConstructor(){t.super_.call(this),this.global_initialize&&this.global_initialize(t),this.args=arguments;for(var o=0;o<e.args.length;o++)this[e.args[o]]=arguments[o];this.name=r,this.generateMessage&&(this.message=this.generateMessage()),t.captureStackTrace(this,t)});return o.inherits(t,e.extends),t.prototype.generateMessage=e.generateMessage,t.captureStackTrace=function captureStackTrace(r,e){Error.captureStackTrace(r,e),r.inner_error&&r.inner_error.stack&&(r.stack+="\n--- inner error ---\n"+r.inner_error.stack)},e.globalize&&s(t),t};var n=function validateInput(r){if("string"!=typeof r||!/^[\-\w]+$/.test(r))throw new Error("Unsafe or invalid string '"+(r||"").toString()+"' used to generate Error class.")},a=function validateArrayInput(r){if(!r||!Array.isArray(r))throw new Error("Unsafe or invalid args used to generate Error class.");for(var e=0;e<r.length;e++)n(r[e])}},function(r,e){r.exports=require("util")},function(r,e,t){var o=t(0);r.exports=o("ArgumentError",{args:["argumentName","inner_error"],generateMessage:function(){return"Invalid or missing argument supplied: "+this.argumentName}})},function(r,e,t){r.exports=t(0)("IOError")},function(r,e,t){var o=t(10),s=t(1),n=r.exports.STATUS_CODE_ATTRIBUTE_NAME="status",a=r.exports=function HttpStatusError(r,e){if(!(this instanceof HttpStatusError)){var t=Object.create(HttpStatusError.prototype);return HttpStatusError.apply(t,arguments),t}if("number"==typeof e&&"number"!=typeof r){var o=e;e=r,r=o}else if(r instanceof Error){var s=r,a=e;"number"!=typeof(r=s.statusCode||s.status_code||s[n])&&("function"==typeof(r=i[s.name])&&(r(s,a),r=s.status_code),r=r||500),e=s.message,this.stack=s.stack}this.status_code=this.statusCode=this[n]=r||500,this.name="HttpStatusError";var c="("+this.status_code+") "+u[r]||!1;this.message=e||c,this.stack||Error.captureStackTrace(this,HttpStatusError),e&&(this.stack=c+"\n"+this.stack)};s.inherits(a,Error);var i=a.code_map={ValidationError:400,ArgumentError:400,AuthenticationRequiredError:401,NotPermittedError:403,ArgumentNullError:function(r,e){var t=e&&e.method||"GET",o=e&&e.params||{},s=e&&e.route&&e.route.path||"";/GET|HEAD/i.test(t)||o.hasOwnProperty(r.argumentName)||new RegExp(":"+r.argumentName).test(s+"/")?r.status_code=404:r.status_code=400,r.message=r.message.replace(new RegExp("^Missing argument: ("+r.argumentName+")$"),'Not Found: "$1"')},NotFoundError:404,NotSupportedError:405,AlreadyInUseError:409},c={};Object.keys(o.STATUS_CODES).forEach(function(r){c[r]=o.STATUS_CODES[r]});var u=a.message_map=c},function(r,e,t){const{BadRequestError:o,BadAccountError:s,ConflictError:n,ForbiddenError:a,ProxyError:i,UnauthorizedError:c,NotFoundError:u,ServiceUnavailableError:l,NotAcceptableError:g}=t(6);r.exports=class BaseController{constructor(r){this.logger=r}get HTTP(){return{OK:200,BAD_REQUEST:400,UNAUTHORIZED:401,FORBIDDEN:403,NOT_FOUND:404,NOT_ACCEPTABLE:406,CONFLICT:409,INTERNAL_SERVER_ERROR:500,SERVICE_UNAVAILABLE:503,GATEWAY_TIMEOUT:504}}getLogLevelFromStatusCode(r){const e={2:"info",3:"info",4:"warn",5:"error"},t=r?r.toString()[0]:void 0;return t&&e[t]?e[t]:"error"}createResponseModel(r,e){const t=this.getLogLevelFromStatusCode(r);return this.logger[t]("Creating response",{statusCode:r,body:e},this.constructor.name),{body:e,statusCode:r,headers:{"Access-Control-Allow-Origin":"*"}}}createSuccessResponse(r){return this.createResponseModel(this.HTTP.OK,{result:r})}createErrorResponse(r,e,t){return"string"!=typeof t&&(t=t&&t.message||t),this.createResponseModel(r,{errorCode:r,message:e,data:t})}createUnexpectedErrorResponse(r){return this.createErrorResponse(this.HTTP.INTERNAL_SERVER_ERROR,"An unexpected error occurred!",r)}handleServiceErrors(r){let e=r.name||"Unnamed Error";return r instanceof o?(this.logger.warn(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.BAD_REQUEST,r.message)):r instanceof c?(this.logger.warn(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.UNAUTHORIZED,r.message)):r instanceof n?(this.logger.warn(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.CONFLICT,r.message)):r instanceof i?(this.logger.error(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.GATEWAY_TIMEOUT,r.message)):r instanceof s?(this.logger.warn(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.FORBIDDEN,r.message)):r instanceof a?(this.logger.warn(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.FORBIDDEN,r.message)):r instanceof u?(this.logger.warn(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.NOT_FOUND,r.message)):r instanceof l?(this.logger.error(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.SERVICE_UNAVAILABLE,r.message)):r instanceof g?(this.logger.warn(e,r,this.constructor.name),this.createErrorResponse(this.HTTP.NOT_ACCEPTABLE,r.message)):(this.logger.error(e,r,this.constructor.name),this.createUnexpectedErrorResponse(r))}verifyRequiredParameters(r,e,t){let s=[];if(this.logger.trace("BaseController.verifyRequiredParameters() called",{qs:e,body:t},this.constructor.name),r.body)try{r.body=JSON.parse(r.body)}catch(r){throw new o(r.message)}if(r.headers){let e="correlation-object";Object.keys(r.headers).forEach(r=>{r.toLowerCase()===e&&(e=r)});try{if(r.correlationObject=JSON.parse(r.headers[e]),!r.correlationObject.correlationId)throw new Error}catch(r){s.push("A Correlation-Object header is required in the request.")}}else s.push("Event headers are missing or malformed.");function processPropertySet(e,t){let o=r[e];t&&t.length>0&&(null==o?s.push(`Request event is malformed. The ${e} object is missing.`):t.forEach(r=>{o[r]||s.push(`The parameter ${r} is required in the Request's ${e}.`)}))}if(processPropertySet("queryStringParameters",e),processPropertySet("body",t),s.length>0)throw new o(s.join(" "))}}},function(r,e,t){const{helpers:o}=t(7);r.exports={BadRequestError:o.generateClass("BadRequestError"),BadAccountError:o.generateClass("BadAccountError"),ConflictError:o.generateClass("ConflictError"),ForbiddenError:o.generateClass("ForbiddenError"),ProxyError:o.generateClass("ProxyError"),UnauthorizedError:o.generateClass("UnauthorizedError"),NotFoundError:o.generateClass("NotFoundError"),ServiceUnavailableError:o.generateClass("ServiceUnavailableError"),NotAcceptableError:o.generateClass("NotAcceptableError")}},function(r,e,t){t(1);(e=r.exports={helpers:{generateClass:t(0)},middleware:{errorHandler:t(9),crashProtector:t(11)}}).AlreadyInUseError=e.AlreadyInUse=t(13),e.ArgumentError=e.Argument=t(2),e.ArgumentNullError=e.ArgumentNull=t(14),e.AuthenticationRequiredError=e.AuthenticationRequired=t(15),e.ConnectionError=e.helpers.generateClass("ConnectionError"),e.Error=e.helpers.generateClass("Error"),e.HttpStatusError=e.HttpStatus=t(4),e.InvalidOperationError=t(16),e.NotFoundError=t(17),e.NotImplementedError=e.helpers.generateClass("NotImplementedError"),e.NotSupportedError=e.NotSupported=t(18),e.NotPermittedError=e.NotPermitted=t(19),e.OutOfMemoryError=e.helpers.generateClass("OutOfMemoryError"),e.RangeError=e.helpers.generateClass("RangeError",{extends:RangeError}),e.ReferenceError=e.helpers.generateClass("ReferenceError",{extends:ReferenceError}),e.StackOverflowError=e.helpers.generateClass("StackOverflowError"),e.SyntaxError=e.helpers.generateClass("SyntaxError",{extends:SyntaxError}),e.TimeoutError=t(20),e.TypeError=e.helpers.generateClass("TypeError",{extends:TypeError}),e.URIError=e.helpers.generateClass("URIError",{extends:URIError}),e.ValidationError=e.Validation=t(21),e.io={IOError:t(3)},e.io.DirectoryNotFoundError=e.helpers.generateClass("DirectoryNotFoundError",{extends:e.io.IOError}),e.io.DriveNotFoundError=e.helpers.generateClass("DriveNotFoundError",{extends:e.io.IOError}),e.io.EndOfStreamError=e.helpers.generateClass("EndOfStreamError",{extends:e.io.IOError}),e.io.FileLoadError=t(22),e.io.FileNotFoundError=t(23),e.io.SocketError=e.helpers.generateClass("SocketError",{extends:e.io.IOError}),e.data={DataError:t(24)},e.data.MemcachedError=e.helpers.generateClass("MemcachedError",{extends:e.data.DataError}),e.data.MongoDBError=e.helpers.generateClass("MongoDBError",{extends:e.data.DataError}),e.data.RedisError=e.helpers.generateClass("RedisError",{extends:e.data.DataError}),e.data.RollbackError=e.helpers.generateClass("RollbackError",{extends:e.data.DataError}),e.data.SQLError=e.helpers.generateClass("SQLError",{extends:e.data.DataError}),e.data.TransactionError=e.helpers.generateClass("TransactionError",{extends:e.data.DataError}),e.Generic=e.helpers.generateClass("GenericError");var o=!1;r.exports.logError=function(r,e){o||console.warn("logError is deprecated.  Use log instead."),o=!0,r&&!r.isLogged&&(r.isLogged=!0,console.error(r)),e&&e(r)},r.exports.log=function(e,t){return"string"==typeof e?e=new r.exports.Error(e):(t&&(e.message=t),e=r.exports.prependCurrentStack(e,3)),e&&(console.error(e&&e.stack||e),e.isLogged=!0),e},r.exports.prependCurrentStack=function(r,e){var t=void 0===e?2:e,o=(new Error).stack.split("\n").slice(t),s=(r.stack||"").split("\n"),n=s.shift();return r.stack=[n].concat(o,"====",s).join("\n"),r}},function(r,e,t){t(1);var o="__COMMON-ERRORS-TYPES__",s=global[o]=global[o]||{};r.exports=function global_extend(r){r.__original_prototype__=r.prototype;var e=s[r.name]=s[r.name]||r;r.prototype=r.__global_prototype__=e.prototype,r.prototype.global_initialize=r.prototype.global_initialize||function global_initialize(r){for(var e=Object.keys(r.__original_prototype__),t=0;t<e.length;t++){var o=e[t];this[o]=r.__original_prototype__[o]}}}},function(r,e,t){var o=t(4);r.exports=function errorHandler(r,e,t,s){if(!r)return s?s():t.end();(r=new o(r,e)).status_code>=500&&(console.error(r.stack),r.message=o.message_map[500]),t.status(r.status_code).send(r.message)}},function(r,e){r.exports=require("http")},function(r,e,t){r.exports=function(r){return function crashProtector(e,o,s){var n=t(12).create();n.on("error",function(t){if(console.error("Fatal crash protected!"),n.dispose(),o.finished||Object.keys(o._headers).length)return console.error(t&&t.stack),o.end();r?r(t,e,o):s(t)}),n.run(s)}}},function(r,e){r.exports=require("domain")},function(r,e,t){var o=t(0);r.exports=o("AlreadyInUseError",{args:["entity_name","arg1","arg2","arg3","arg4"],generateMessage:function(){var r=Array.prototype.slice.call(this.args,1);return"The specified '"+this.entity_name+"' value is already in use for: "+r.join(", ")}})},function(r,e,t){var o=t(0);r.exports=o("ArgumentNullError",{args:["argumentName","inner_error"],extends:t(2),generateMessage:function(){return"Missing argument: "+this.argumentName}})},function(r,e,t){var o=t(0);r.exports=o("AuthenticationRequiredError",{args:["message","inner_error"],generateMessage:function(){return"An attempt was made to perform an operation without authentication: "+this.message}})},function(r,e,t){var o=t(0);r.exports=o("InvalidOperationError",{args:["message","inner_error"],generateMessage:function(){return"Invalid Operation: "+this.message}})},function(r,e,t){var o=t(0);r.exports=o("NotFoundError",{args:["entity_name","inner_error"],generateMessage:function(){return'Not Found: "'+this.entity_name+'"'}})},function(r,e,t){var o=t(0);r.exports=o("NotSupportedError",{args:["message","inner_error"],generateMessage:function(){return"Not Supported: "+this.message}})},function(r,e,t){var o=t(0);r.exports=o("NotPermittedError",{args:["message","inner_error"],generateMessage:function(){return"An attempt was made to perform an operation that is not permitted: "+this.message}})},function(r,e,t){var o=t(0);r.exports=o("TimeoutError",{args:["time","inner_error"],generateMessage:function(){return/^\d/.test(this.time)?"Timeout of '"+this.time+"' exceeded":"Timeout exceeded: "+this.time}})},function(r,e,t){var o=t(0),s=t(2),n=r.exports=o("ValidationError",{args:["message","code","field"]});n.prototype.addError=function addError(r){return this.errors=this.errors||[],this.errors.push(r),this},n.prototype.addErrors=function addErrors(r){if(!(r instanceof Array))throw new s("errors");return this.errors=this.errors||[],Array.prototype.push.apply(this.errors,r),this},n.prototype.generateMessage=function generateMessage(){return this.message||"Validation failed."},n.prototype.toJSON=function toJSON(){var r={};return this.errors?(this.message&&(r.message=this.message),r.errors=this.errors.map(function(r){return r.toJSON()})):(this.message&&(r.text=this.message),this.code&&(r.code=this.code),this.field&&(r.field=this.field)),r}},function(r,e,t){var o=t(0);r.exports=o("FileLoadError",{args:["file_name","inner_error"],extends:t(3),generateMessage:function(){return"Unable to load file: "+this.file_name}})},function(r,e,t){var o=t(0);r.exports=o("FileNotFoundError",{args:["file_name","inner_error"],extends:t(3),generateMessage:function(){return"File not found: "+this.file_name}})},function(r,e,t){r.exports=t(0)("DataError")}]);
-//# sourceMappingURL=index.js.map
+module.exports =
+/******/ (function(modules, runtime) { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(335);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ 131:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("TimeoutError", {
+  args: ['time', 'inner_error'],
+  generateMessage: function(){
+  	if(/^\d/.test(this.time)) return "Timeout of '" + this.time + "' exceeded";
+  	else return "Timeout exceeded: " + this.time;
+  }
+})
+
+
+/***/ }),
+
+/***/ 152:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var util = __webpack_require__(64);
+
+var exports = module.exports = {
+  helpers: {
+    generateClass: __webpack_require__(540)
+  },
+  middleware: {
+    errorHandler: __webpack_require__(511),
+    crashProtector: __webpack_require__(575)
+  }
+};
+
+exports.AlreadyInUseError = exports.AlreadyInUse = __webpack_require__(819);
+exports.ArgumentError = exports.Argument = __webpack_require__(713);
+exports.ArgumentNullError = exports.ArgumentNull = __webpack_require__(680);
+exports.AuthenticationRequiredError = exports.AuthenticationRequired = __webpack_require__(190);
+exports.ConnectionError = exports.helpers.generateClass('ConnectionError');
+exports.Error = exports.helpers.generateClass('Error');
+exports.HttpStatusError = exports.HttpStatus = __webpack_require__(935);
+exports.InvalidOperationError = __webpack_require__(172);
+exports.NotFoundError = __webpack_require__(337);
+exports.NotImplementedError = exports.helpers.generateClass('NotImplementedError'),
+exports.NotSupportedError = exports.NotSupported = __webpack_require__(348);
+exports.NotPermittedError = exports.NotPermitted = __webpack_require__(924);
+exports.OutOfMemoryError = exports.helpers.generateClass('OutOfMemoryError');
+exports.RangeError = exports.helpers.generateClass('RangeError', { extends: RangeError });
+exports.ReferenceError = exports.helpers.generateClass('ReferenceError', { extends: ReferenceError });
+exports.StackOverflowError = exports.helpers.generateClass('StackOverflowError');
+exports.SyntaxError = exports.helpers.generateClass('SyntaxError', { extends: SyntaxError });
+exports.TimeoutError = __webpack_require__(131)
+exports.TypeError = exports.helpers.generateClass('TypeError', { extends: TypeError });
+exports.URIError = exports.helpers.generateClass('URIError', { extends: URIError });
+exports.ValidationError = exports.Validation = __webpack_require__(968);
+
+exports.io = {
+  IOError: __webpack_require__(214)
+};
+exports.io.DirectoryNotFoundError = exports.helpers.generateClass('DirectoryNotFoundError', { extends: exports.io.IOError });
+exports.io.DriveNotFoundError = exports.helpers.generateClass('DriveNotFoundError', { extends: exports.io.IOError });
+exports.io.EndOfStreamError = exports.helpers.generateClass('EndOfStreamError', { extends: exports.io.IOError });
+exports.io.FileLoadError = __webpack_require__(904);
+exports.io.FileNotFoundError = __webpack_require__(38);
+exports.io.SocketError = exports.helpers.generateClass('SocketError', { extends: exports.io.IOError });
+
+exports.data = {
+  DataError: __webpack_require__(20)
+};
+exports.data.MemcachedError = exports.helpers.generateClass('MemcachedError', { extends: exports.data.DataError });
+exports.data.MongoDBError = exports.helpers.generateClass('MongoDBError', { extends: exports.data.DataError });
+exports.data.RedisError = exports.helpers.generateClass('RedisError', { extends: exports.data.DataError });
+exports.data.RollbackError = exports.helpers.generateClass('RollbackError', { extends: exports.data.DataError });
+exports.data.SQLError = exports.helpers.generateClass('SQLError', { extends: exports.data.DataError });
+exports.data.TransactionError = exports.helpers.generateClass('TransactionError', { extends: exports.data.DataError });
+
+
+
+exports.Generic = exports.helpers.generateClass('GenericError'); //deprecated
+
+
+var logErrorDeprecationWarning = false;
+module.exports.logError = function(err, cb) {
+  if (!logErrorDeprecationWarning) console.warn("logError is deprecated.  Use log instead.");
+  logErrorDeprecationWarning = true;
+
+  if (err && !err.isLogged) {
+    err.isLogged = true;
+    console.error(err);
+  }
+  if (cb) cb(err);
+};
+
+module.exports.log = function(err, message) {
+  if (typeof err == 'string') {
+    err = new module.exports.Error(err);
+  } else {
+    if (message) {
+      err.message = message;
+    }
+    err = module.exports.prependCurrentStack(err, 3);
+  }
+  if (err) {
+    console.error(err && err.stack || err);
+    err.isLogged = true;
+  }
+  return err;
+}
+
+module.exports.prependCurrentStack = function(err, offset_) {
+  var linesToSkip = (typeof offset_ === 'undefined') ? 2 : offset_;
+  var stackToPrepend = (new Error()).stack.split("\n").slice(linesToSkip);
+  var mainStack = (err.stack || '').split("\n");
+  var errTitle = mainStack.shift();
+  err.stack = [errTitle].concat(stackToPrepend, "====", mainStack).join("\n");
+  return err;
+};
+
+/***/ }),
+
+/***/ 172:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("InvalidOperationError", {
+  args: ['message', 'inner_error'],
+  generateMessage: function(){
+    return "Invalid Operation: " + this.message;
+  }
+})
+
+
+/***/ }),
+
+/***/ 190:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("AuthenticationRequiredError", {
+  args: ['message', 'inner_error'],
+  generateMessage: function(){
+    return "An attempt was made to perform an operation without authentication: " + this.message;
+  }
+})
+
+
+/***/ }),
+
+/***/ 20:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = __webpack_require__(540)('DataError');
+
+/***/ }),
+
+/***/ 214:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = __webpack_require__(540)('IOError');
+
+/***/ }),
+
+/***/ 335:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const {
+    BadRequestError,
+    BadAccountError,
+    ConflictError,
+    ForbiddenError,
+    ProxyError,
+    UnauthorizedError,
+    NotFoundError,
+    ServiceUnavailableError,
+    NotAcceptableError
+} = __webpack_require__(350);
+
+module.exports = class BaseController {
+    constructor(logger) {
+        this.log = logger;
+    }
+
+    get HTTP() {
+        return {
+            OK: 200,
+            BAD_REQUEST: 400,
+            UNAUTHORIZED: 401,
+            FORBIDDEN: 403,
+            NOT_FOUND: 404,
+            NOT_ACCEPTABLE: 406,
+            CONFLICT: 409,
+            INTERNAL_SERVER_ERROR: 500,
+            SERVICE_UNAVAILABLE: 503,
+            GATEWAY_TIMEOUT: 504
+        };
+    }
+
+    /**
+     * Gets the proper logging level for that status code passed.
+     * This can handle both a number or a string status code.
+     * @param {String/Number} statusCode
+     * @returns {String} proper log level for the statusCode
+     */
+    getLogLevelFromStatusCode(statusCode) {
+        const levels = {
+            2: "info", // 2XX
+            3: "info", // 3XX
+            4: "warn", // 4XX
+            5: "error" // 5XX
+        };
+
+        // if the statusCode is defined and the status code matches one of the expected options,
+        // then return that option
+        // else return "error"
+        const statusChar = statusCode ? statusCode.toString()[0] : undefined;
+
+        return statusChar && levels[statusChar] ? levels[statusChar] : "error";
+    }
+
+    createResponseModel(statusCode, body) {
+        const level = this.getLogLevelFromStatusCode(statusCode);
+
+        this.log[level](
+            "Creating response",
+            { statusCode, body },
+            this.constructor.name
+        );
+
+        return {
+            body,
+            statusCode,
+            headers: {
+                "Access-Control-Allow-Origin": "*"
+            }
+        };
+    }
+
+    createSuccessResponse(result) {
+        return this.createResponseModel(this.HTTP.OK, { result });
+    }
+
+    createErrorResponse(errorCode, message, data) {
+        if (typeof data !== "string") {
+            data = (data && data.message) || data;
+        }
+
+        return this.createResponseModel(errorCode, {
+            errorCode,
+            message,
+            data
+        });
+    }
+
+    createUnexpectedErrorResponse(data) {
+        return this.createErrorResponse(
+            this.HTTP.INTERNAL_SERVER_ERROR,
+            "An unexpected error occurred!",
+            data
+        );
+    }
+
+    handleServiceErrors(error) {
+        let errorName = error.name || "Unnamed Error";
+
+        // Handle errors
+        if (error instanceof BadRequestError) {
+            // 400
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(
+                this.HTTP.BAD_REQUEST,
+                error.message
+            );
+        } else if (error instanceof UnauthorizedError) {
+            // 401
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(
+                this.HTTP.UNAUTHORIZED,
+                error.message
+            );
+        } else if (error instanceof BadAccountError) {
+            // 403
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(this.HTTP.FORBIDDEN, error.message);
+        } else if (error instanceof ForbiddenError) {
+            // 403
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(this.HTTP.FORBIDDEN, error.message);
+        } else if (error instanceof NotFoundError) {
+            // 404
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(this.HTTP.NOT_FOUND, error.message);
+        } else if (error instanceof ConflictError) {
+            // 409
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(this.HTTP.CONFLICT, error.message);
+        } else if (error instanceof ServiceUnavailableError) {
+            // 503
+            this.log.error(errorName, error, this.constructor.name);
+            return this.createErrorResponse(
+                this.HTTP.SERVICE_UNAVAILABLE,
+                error.message
+            );
+        } else if (error instanceof ProxyError) {
+            // 504
+            this.log.error(errorName, error, this.constructor.name);
+            return this.createErrorResponse(
+                this.HTTP.GATEWAY_TIMEOUT,
+                error.message
+            );
+        } else if (error instanceof NotAcceptableError) {
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(
+                this.HTTP.NOT_ACCEPTABLE,
+                error.message
+            );
+        }
+
+        // Error 500
+        this.log.error(errorName, error, this.constructor.name);
+        return this.createUnexpectedErrorResponse(error);
+    }
+
+    // verifyRequiredParameters() collects errors about missing params and throws an Error if any are missing
+    // qs and body are expected to be arrays of strings
+    // This function also parses the event.body from JSON into an object
+    /**
+     * @param {Array<String>} qs - Query strings passed in
+     * @param {Array<String>} body - Body params that are required
+     * @throws {Error} - When we don't have a correlation object in the headers
+     * @throws {BadRequestError} - When other errors have accrued
+     */
+    verifyRequiredParameters(
+        event,
+        qs,
+        body
+    ) {
+        let errors = [];
+
+        this.log.trace(
+            "BaseController.verifyRequiredParameters() called",
+            { qs, body },
+            this.constructor.name
+        );
+
+        if (event.body) {
+            try {
+                event.body = JSON.parse(event.body);
+            } catch (parseError) {
+                throw new BadRequestError(parseError.message);
+            }
+        }
+
+        // Require the "Correlation-Object" header
+        if (event.headers) {
+            let correlationObjectHeaderName = "correlation-object";
+
+            // get the current correlationObject from headers
+            Object.keys(event.headers).forEach(headerName => {
+                if (headerName.toLowerCase() === correlationObjectHeaderName) {
+                    // The headerName itself may be any capitalization. So this checks for a case-insenstive match.
+                    correlationObjectHeaderName = headerName;
+                }
+            });
+
+            try {
+                // Try to parse the header as JSON. If it fails or if there isn't a correlationId property, then we throw an error
+                event.correlationObject = JSON.parse(
+                    event.headers[correlationObjectHeaderName]
+                );
+
+                if (!event.correlationObject.correlationId)
+                    throw new Error();
+
+                // TODO: The correlationObject is intended to be output in all log messages. This is not yet implemented.
+            } catch (error) {
+                errors.push(
+                    "A Correlation-Object header is required in the request."
+                );
+            }
+        } else errors.push("Event headers are missing or malformed.");
+
+        function processPropertySet(propertySetName, requiredProperties) {
+            let propertySet = event[propertySetName];
+
+            if (requiredProperties && requiredProperties.length > 0) {
+                // fail if the propertySet isn't defined
+                if (propertySet === undefined || propertySet === null) {
+                    errors.push(
+                        `Request event is malformed. The ${propertySetName} object is missing.`
+                    );
+                } else {
+                    // Check for each of the required properties
+                    requiredProperties.forEach(propertyName => {
+                        let value = propertySet[propertyName];
+
+                        // If the value isn't there or is blank, then add it to the errors list
+                        if (!value)
+                            errors.push(
+                                `The parameter ${propertyName} is required in the Request's ${propertySetName}.`
+                            );
+                    });
+                }
+            }
+        }
+
+        processPropertySet("queryStringParameters", qs);
+        processPropertySet("body", body);
+
+        // If there are any errors, throw an Error object with all of the messages
+        if (errors.length > 0) throw new BadRequestError(errors.join(" "));
+    }
+};
+
+
+/***/ }),
+
+/***/ 337:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("NotFoundError", {
+  args: ['entity_name', 'inner_error'],
+  generateMessage: function(){
+    return 'Not Found: "' + this.entity_name + '"';
+  }
+})
+
+
+/***/ }),
+
+/***/ 348:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("NotSupportedError", {
+  args: ['message', 'inner_error'],
+  generateMessage: function(){
+    return "Not Supported: " + this.message;
+  }
+})
+
+
+/***/ }),
+
+/***/ 350:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const { helpers } = __webpack_require__(152);
+
+module.exports = {
+    BadRequestError: helpers.generateClass("BadRequestError"),
+    BadAccountError: helpers.generateClass("BadAccountError"),
+    ConflictError: helpers.generateClass("ConflictError"),
+    ForbiddenError: helpers.generateClass("ForbiddenError"),
+    ProxyError: helpers.generateClass("ProxyError"),
+    UnauthorizedError: helpers.generateClass("UnauthorizedError"),
+    NotFoundError: helpers.generateClass("NotFoundError"),
+    ServiceUnavailableError: helpers.generateClass("ServiceUnavailableError"),
+    NotAcceptableError: helpers.generateClass("NotAcceptableError")
+};
+
+
+/***/ }),
+
+/***/ 38:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("FileNotFoundError", {
+  args: ['file_name', 'inner_error'],
+  extends: __webpack_require__(214),
+  generateMessage: function(){
+    return "File not found: " + this.file_name;
+  }
+});
+
+
+/***/ }),
+
+/***/ 421:
+/***/ (function(module) {
+
+module.exports = require("http");
+
+/***/ }),
+
+/***/ 5:
+/***/ (function(module) {
+
+module.exports = require("domain");
+
+/***/ }),
+
+/***/ 511:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var HttpStatusError = __webpack_require__(935);
+
+module.exports = function errorHandler(err, req, res, next){
+  if(!err) {
+    if(next) return next();
+    else return res.end();
+  }
+
+  err = new HttpStatusError(err, req);
+  if(err.status_code >= 500) {
+    console.error(err.stack);
+    err.message = HttpStatusError.message_map[500]; //hide the real error from user agent.
+  }
+
+  res.status(err.status_code).send(err.message);
+}
+
+
+/***/ }),
+
+/***/ 540:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var util = __webpack_require__(64);
+var globalize = __webpack_require__(803);
+
+module.exports = function generateErrorClass(name, options){
+  options = options || {};
+  if(options.subclass) console.warn("options.subclass is deprecated. use options.extends instead.");
+  options.extends = options.extends || options.subclass || Error;
+  options.args = options.args || ['message', 'inner_error'];
+  options.generateMessage = options.generateMessage || null;
+  options.globalize = options.globalize === false ? false : true;
+
+  validateInput(name);
+  validateArrayInput(options.args);
+
+  var classConstructor = function classConstructor(){
+    Class.super_.call(this);
+    if(this.global_initialize) this.global_initialize(Class);
+
+    this.args = arguments;
+    for(var i = 0; i<options.args.length; i++){
+      this[options.args[i]] = arguments[i];
+    }
+    this.name = name;
+    if(this.generateMessage) this.message = this.generateMessage();
+    Class.captureStackTrace(this, Class);
+  };
+
+  var classGeneratorFn = new Function('classConstructor', [
+    "return function ", name, "(", options.args.join(', '), "){",
+      "if(!(this instanceof ", name, ")) {",
+        "var instance = Object.create(", name, ".prototype);",
+        "classConstructor.apply(instance, arguments);",
+        "return instance;",
+      "} else {",
+        "classConstructor.apply(this, arguments);",
+      "}",
+    "};",
+  ].join(''));
+  var Class = classGeneratorFn(classConstructor);
+
+  util.inherits(Class, options.extends);
+
+  Class.prototype.generateMessage = options.generateMessage;
+
+  Class.captureStackTrace = function captureStackTrace(error, error_class){
+    Error.captureStackTrace(error, error_class);
+    if(error.inner_error && error.inner_error.stack) error.stack += "\n--- inner error ---\n" + error.inner_error.stack;
+  }
+
+  if(options.globalize) globalize(Class);
+  return Class;
+}
+
+var validateInput = function validateInput(str){
+  if(typeof str != 'string' || !/^[\-\w]+$/.test(str)) throw new Error("Unsafe or invalid string '" + (str || '').toString() + "' used to generate Error class.");
+}
+var validateArrayInput = function validateArrayInput(array){
+  if(!array || !Array.isArray(array)) throw new Error("Unsafe or invalid args used to generate Error class.");
+  for(var i = 0; i<array.length; i++) validateInput(array[i]);
+}
+
+/***/ }),
+
+/***/ 575:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = function (errorHandler){
+  return function crashProtector(req, res, next) {
+    var domain = __webpack_require__(5); //require only if needed, because "Due to their experimental nature, the Domains features are disabled unless the domain module is loaded at least once."
+    var d = domain.create();
+    d.on('error', function(err){ 
+      console.error("Fatal crash protected!");
+      d.dispose();
+      if(res.finished || Object.keys(res._headers).length) {
+        console.error(err && err.stack);
+        return res.end();
+      } 
+      if(errorHandler) errorHandler(err, req, res);
+      else next(err);
+    });
+    d.run(next);
+  }
+}
+
+var findErrorHandler = function(app){
+  try {
+    var errorHandler;
+    var foundRouter = false;
+    for(var i=0; i<app.stack; i++){
+      var middleware = app.stack[i];
+      if(foundRouter && middleware.handle.length >= 4) {
+        errorHandler = middleware;
+        break;
+      } else if(app.router === middleware.handle) foundRouter = true;
+    }
+    return errorHandler;
+  } catch(e) {
+    console.error("Crash protector error", e);
+  }
+}
+
+/***/ }),
+
+/***/ 64:
+/***/ (function(module) {
+
+module.exports = require("util");
+
+/***/ }),
+
+/***/ 680:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("ArgumentNullError", {
+  args: ['argumentName', 'inner_error'],
+  extends: __webpack_require__(713),
+  generateMessage: function(){
+    return "Missing argument: " + this.argumentName;
+  }
+})
+
+
+/***/ }),
+
+/***/ 713:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("ArgumentError", {
+  args: ['argumentName', 'inner_error'],
+  generateMessage: function(){
+    return "Invalid or missing argument supplied: " + this.argumentName;
+  }
+})
+
+
+/***/ }),
+
+/***/ 803:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var util = __webpack_require__(64);
+var key = "__COMMON-ERRORS-TYPES__";
+var global_errors = global[key] = global[key] || {};
+
+module.exports = function global_extend(Class) {
+  Class.__original_prototype__ = Class.prototype;
+  var global_class = global_errors[Class.name] = global_errors[Class.name] || Class;
+  Class.prototype = Class.__global_prototype__ = global_class.prototype;
+  Class.prototype.global_initialize = Class.prototype.global_initialize || function global_initialize(Class){
+    var proto_keys = Object.keys(Class.__original_prototype__);
+    for(var i = 0; i<proto_keys.length; i++) {
+      var proto_key = proto_keys[i];
+      this[proto_key] = Class.__original_prototype__[proto_key];
+    }
+  };
+}
+
+/***/ }),
+
+/***/ 819:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("AlreadyInUseError", {
+  args: ['entity_name', 'arg1', 'arg2', 'arg3', 'arg4'],
+  generateMessage: function(){
+    var args = Array.prototype.slice.call(this.args, 1);
+    return "The specified '" + this.entity_name + "' value is already in use for: " + args.join(', ');
+  }
+})
+
+
+/***/ }),
+
+/***/ 904:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("FileLoadError", {
+  args: ['file_name', 'inner_error'],
+  extends: __webpack_require__(214),
+  generateMessage: function(){
+    return "Unable to load file: " + this.file_name;
+  }
+});
+
+
+/***/ }),
+
+/***/ 924:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+module.exports = generateClass("NotPermittedError", {
+  args: ['message', 'inner_error'],
+  generateMessage: function(){
+    return "An attempt was made to perform an operation that is not permitted: " + this.message;
+  }
+})
+
+
+/***/ }),
+
+/***/ 935:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var http = __webpack_require__(421);
+var util = __webpack_require__(64);
+
+var STATUS_CODE_ATTRIBUTE_NAME = module.exports.STATUS_CODE_ATTRIBUTE_NAME = 'status';
+
+var HttpStatusError = module.exports = function HttpStatusError(status_code, message) {
+  if(!(this instanceof HttpStatusError)) {
+    var instance = Object.create(HttpStatusError.prototype);
+    HttpStatusError.apply(instance, arguments);
+    return instance;
+  }
+
+  if(typeof message == 'number' && typeof status_code != 'number') {
+    //old interface, so swap.
+    var c = message;
+    message = status_code;
+    status_code = c;
+  } else if(status_code instanceof Error) {
+    var err = status_code;
+    var req = message;
+    status_code = err.statusCode || err.status_code || err[STATUS_CODE_ATTRIBUTE_NAME];
+    if(typeof status_code != "number") {
+      status_code = code_map[err.name];
+      if(typeof status_code == "function") {
+        status_code(err, req);
+        status_code = err.status_code;
+      }
+      status_code = status_code || 500;
+    } 
+    message = err.message;
+    this.stack = err.stack;
+  }
+
+  this.status_code = this.statusCode = this[STATUS_CODE_ATTRIBUTE_NAME] = status_code || 500;
+  this.name = "HttpStatusError";
+
+  var http_message = "(" + this.status_code + ") " + message_map[status_code] || false;
+  this.message = message || http_message;
+  if(!this.stack) Error.captureStackTrace(this, HttpStatusError);
+  if(message) this.stack = http_message + "\n" + this.stack;
+}
+util.inherits(HttpStatusError, Error);
+
+var code_map = HttpStatusError.code_map = {
+  "ValidationError": 400,
+  "ArgumentError": 400,
+  "AuthenticationRequiredError": 401,
+  "NotPermittedError": 403,
+  "ArgumentNullError": function(err, req){
+    var method = req && req.method || 'GET';
+    var params = req && req.params || {};
+    var route_path = req && req.route && req.route.path || '';
+
+    if(/GET|HEAD/i.test(method) || params.hasOwnProperty(err.argumentName) || new RegExp(":" + err.argumentName + '').test(route_path + '/')) err.status_code = 404;
+    else err.status_code = 400;
+    err.message = err.message.replace(new RegExp("^Missing argument: (" + err.argumentName + ")$"), 'Not Found: "$1"' );
+  },
+  "NotFoundError": 404,
+  "NotSupportedError": 405,
+  "AlreadyInUseError": 409,
+};
+
+var codes = {};
+Object.keys(http.STATUS_CODES).forEach(function(key){
+  codes[key] = http.STATUS_CODES[key];
+});
+var message_map = HttpStatusError.message_map = codes;
+
+/***/ }),
+
+/***/ 968:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var generateClass = __webpack_require__(540);
+var ArgumentError = __webpack_require__(713);
+
+var ValidationError = module.exports = generateClass("ValidationError", {
+  args: ['message', 'code', 'field']
+});
+
+ValidationError.prototype.addError = function addError(error) {
+  this.errors = this.errors || [];
+  this.errors.push(error);
+  return this;
+}
+
+ValidationError.prototype.addErrors = function addErrors(errors) {
+  if(!(errors instanceof Array)) throw new ArgumentError("errors");
+  
+  this.errors = this.errors || [];
+  Array.prototype.push.apply(this.errors, errors);
+  return this;
+}
+
+ValidationError.prototype.generateMessage = function generateMessage(){
+  return this.message || "Validation failed.";
+}
+
+ValidationError.prototype.toJSON = function toJSON(){
+  var o = {};
+  if(this.errors) {
+    if(this.message) o.message = this.message;
+    o.errors = this.errors.map(function(error){
+      return error.toJSON();
+    });
+  } else {
+    if(this.message) o.text = this.message;
+    if(this.code) o.code = this.code;
+    if(this.field) o.field = this.field;    
+  }
+  return o;
+}
+
+/***/ })
+
+/******/ });

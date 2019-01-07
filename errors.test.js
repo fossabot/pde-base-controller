@@ -1,17 +1,18 @@
-const test = require("ava");
 const errors = require("./errors");
 
-test("Should be an object", t => {
-    t.true(typeof errors === "object");
-});
-test("Should have expected error Objects", t => {
-    Object.keys(errors).forEach(error => t.true(new errors[error]() instanceof Error));
-});
-test("Should have a stack and a message in the error object", t => {
-    Object.keys(errors).forEach(error => {
-        let testingError = new errors[error]("test");
+describe("Errors tests", () => {
+    it("Should be an object", () => {
+	    expect(typeof errors === "object").toBeTruthy();
+    });
+    it("Should have expected error Objects", () => {
+	    Object.keys(errors).forEach(error => expect(new errors[error]() instanceof Error).toBeTruthy());
+    });
+    it("Should have a stack and a message in the error object", () => {
+	    Object.keys(errors).forEach(error => {
+	        let testingError = new errors[error]("test");
 
-        t.true(testingError.hasOwnProperty("stack"));
-        t.true(testingError.hasOwnProperty("message"));
+	        expect(testingError.hasOwnProperty("stack")).toBeTruthy();
+	        expect(testingError.hasOwnProperty("message")).toBeTruthy();
+	    });
     });
 });

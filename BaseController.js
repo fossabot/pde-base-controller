@@ -11,8 +11,8 @@ const {
 } = require("./errors");
 
 module.exports = class BaseController {
-    constructor(loggerService) {
-        this.logger = loggerService;
+    constructor(logger) {
+        this.log = logger;
     }
 
     get HTTP() {
@@ -55,7 +55,7 @@ module.exports = class BaseController {
     createResponseModel(statusCode, body) {
         const level = this.getLogLevelFromStatusCode(statusCode);
 
-        this.logger[level](
+        this.log[level](
             "Creating response",
             { statusCode, body },
             this.constructor.name
@@ -100,50 +100,50 @@ module.exports = class BaseController {
         // Handle errors
         if (error instanceof BadRequestError) {
             // 400
-            this.logger.warn(errorName, error, this.constructor.name);
+            this.log.warn(errorName, error, this.constructor.name);
             return this.createErrorResponse(
                 this.HTTP.BAD_REQUEST,
                 error.message
             );
         } else if (error instanceof UnauthorizedError) {
             // 401
-            this.logger.warn(errorName, error, this.constructor.name);
+            this.log.warn(errorName, error, this.constructor.name);
             return this.createErrorResponse(
                 this.HTTP.UNAUTHORIZED,
                 error.message
             );
-        } else if (error instanceof ConflictError) {
-            // 409
-            this.logger.warn(errorName, error, this.constructor.name);
-            return this.createErrorResponse(this.HTTP.CONFLICT, error.message);
-        } else if (error instanceof ProxyError) {
-            // 504
-            this.logger.error(errorName, error, this.constructor.name);
-            return this.createErrorResponse(
-                this.HTTP.GATEWAY_TIMEOUT,
-                error.message
-            );
         } else if (error instanceof BadAccountError) {
             // 403
-            this.logger.warn(errorName, error, this.constructor.name);
+            this.log.warn(errorName, error, this.constructor.name);
             return this.createErrorResponse(this.HTTP.FORBIDDEN, error.message);
         } else if (error instanceof ForbiddenError) {
             // 403
-            this.logger.warn(errorName, error, this.constructor.name);
+            this.log.warn(errorName, error, this.constructor.name);
             return this.createErrorResponse(this.HTTP.FORBIDDEN, error.message);
         } else if (error instanceof NotFoundError) {
             // 404
-            this.logger.warn(errorName, error, this.constructor.name);
+            this.log.warn(errorName, error, this.constructor.name);
             return this.createErrorResponse(this.HTTP.NOT_FOUND, error.message);
+        } else if (error instanceof ConflictError) {
+            // 409
+            this.log.warn(errorName, error, this.constructor.name);
+            return this.createErrorResponse(this.HTTP.CONFLICT, error.message);
         } else if (error instanceof ServiceUnavailableError) {
             // 503
-            this.logger.error(errorName, error, this.constructor.name);
+            this.log.error(errorName, error, this.constructor.name);
             return this.createErrorResponse(
                 this.HTTP.SERVICE_UNAVAILABLE,
                 error.message
             );
+        } else if (error instanceof ProxyError) {
+            // 504
+            this.log.error(errorName, error, this.constructor.name);
+            return this.createErrorResponse(
+                this.HTTP.GATEWAY_TIMEOUT,
+                error.message
+            );
         } else if (error instanceof NotAcceptableError) {
-            this.logger.warn(errorName, error, this.constructor.name);
+            this.log.warn(errorName, error, this.constructor.name);
             return this.createErrorResponse(
                 this.HTTP.NOT_ACCEPTABLE,
                 error.message
@@ -151,7 +151,7 @@ module.exports = class BaseController {
         }
 
         // Error 500
-        this.logger.error(errorName, error, this.constructor.name);
+        this.log.error(errorName, error, this.constructor.name);
         return this.createUnexpectedErrorResponse(error);
     }
 
@@ -165,32 +165,32 @@ module.exports = class BaseController {
      * @throws {BadRequestError} - When other errors have accrued
      */
     verifyRequiredParameters(
-        eventObject,
+        event,
         qs,
         body
     ) {
         let errors = [];
 
-        this.logger.trace(
+        this.log.trace(
             "BaseController.verifyRequiredParameters() called",
             { qs, body },
             this.constructor.name
         );
 
-        if (eventObject.body) {
+        if (event.body) {
             try {
-                eventObject.body = JSON.parse(eventObject.body);
+                event.body = JSON.parse(event.body);
             } catch (parseError) {
                 throw new BadRequestError(parseError.message);
             }
         }
 
         // Require the "Correlation-Object" header
-        if (eventObject.headers) {
+        if (event.headers) {
             let correlationObjectHeaderName = "correlation-object";
 
             // get the current correlationObject from headers
-            Object.keys(eventObject.headers).forEach(headerName => {
+            Object.keys(event.headers).forEach(headerName => {
                 if (headerName.toLowerCase() === correlationObjectHeaderName) {
                     // The headerName itself may be any capitalization. So this checks for a case-insenstive match.
                     correlationObjectHeaderName = headerName;
@@ -199,11 +199,11 @@ module.exports = class BaseController {
 
             try {
                 // Try to parse the header as JSON. If it fails or if there isn't a correlationId property, then we throw an error
-                eventObject.correlationObject = JSON.parse(
-                    eventObject.headers[correlationObjectHeaderName]
+                event.correlationObject = JSON.parse(
+                    event.headers[correlationObjectHeaderName]
                 );
 
-                if (!eventObject.correlationObject.correlationId)
+                if (!event.correlationObject.correlationId)
                     throw new Error();
 
                 // TODO: The correlationObject is intended to be output in all log messages. This is not yet implemented.
@@ -215,7 +215,7 @@ module.exports = class BaseController {
         } else errors.push("Event headers are missing or malformed.");
 
         function processPropertySet(propertySetName, requiredProperties) {
-            let propertySet = eventObject[propertySetName];
+            let propertySet = event[propertySetName];
 
             if (requiredProperties && requiredProperties.length > 0) {
                 // fail if the propertySet isn't defined
