@@ -10,7 +10,13 @@ const {
     NotAcceptableError
 } = require("./errors");
 
-module.exports = class BaseController {
+/**
+ * class containing a standard set of methods for responding to requests in a lambda service
+ */
+class BaseController {
+    /**
+     * @param {Object} logger - contains the logger to be used for the class
+     */
     constructor(logger) {
         this.log = logger;
     }
@@ -70,6 +76,11 @@ module.exports = class BaseController {
         };
     }
 
+    /**
+     * Creates standard successful result objects
+     * @param {Object} result - object to return in form of json to the http request
+     * @returns {Object} - containing a successful response to a request
+     */
     createSuccessResponse(result) {
         return this.createResponseModel(this.HTTP.OK, { result });
     }
@@ -245,3 +256,4 @@ module.exports = class BaseController {
         if (errors.length > 0) throw new BadRequestError(errors.join(" "));
     }
 };
+module.exports = BaseController;
