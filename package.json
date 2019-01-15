@@ -57,5 +57,5 @@
     "test:ci": "jest --coverage && cat ./coverage/lcov.info | coveralls",
     "publish": "np"
   },
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
