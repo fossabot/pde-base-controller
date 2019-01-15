@@ -21,6 +21,7 @@
     "@zeit/ncc": "^0.8.1",
     "commitlint": "^7.2.1",
     "coveralls": "^3.0.2",
+    "documentation": "^9.1.1",
     "eslint": "^5.12.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-prettier": "^3.0.1",
@@ -55,7 +56,7 @@
     "lint:fix": "eslint --config .eslintrc --ignore-pattern dist/ --fix . ",
     "test": "jest --coverage",
     "test:ci": "jest --coverage && cat ./coverage/lcov.info | coveralls",
-    "publish": "np"
+    "docs": "documentation build *.js -f md -o DOCUMENTATION.md"
   },
-  "version": "1.0.0"
+  "version": "1.0.3"
 }
