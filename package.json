@@ -54,8 +54,7 @@
     "lint": "eslint --config .eslintrc --ignore-pattern dist/ . ",
     "lint:fix": "eslint --config .eslintrc --ignore-pattern dist/ --fix . ",
     "test": "jest --coverage",
-    "test:ci": "jest --coverage && cat ./coverage/lcov.info | coveralls",
-    "publish": "np"
+    "test:ci": "jest --coverage && cat ./coverage/lcov.info | coveralls"
   },
-  "version": "1.0.1"
+  "version": "1.0.22"
 }
